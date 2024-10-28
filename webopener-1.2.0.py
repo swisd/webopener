@@ -46,6 +46,7 @@ class App(QMainWindow):
 
         self.tabs = QTabWidget()
         self.setCentralWidget(self.tabs)
+        self.tabs.setDocumentMode(True)
 
         self.window = QWidget()
 
@@ -76,16 +77,34 @@ class App(QMainWindow):
         self.add_tab_btn = QPushButton("+")
         self.add_tab_btn.setMaximumWidth(40)
 
+        self.stop_btn = QPushButton("X")
+        self.stop_btn.setMaximumWidth(40)
+
+        self.list_btn = QPushButton("☰")
+        self.list_btn.setMaximumWidth(40)
+
+        self.devcon_btn = QPushButton("</>")
+        self.devcon_btn.setMaximumWidth(40)
+
+        self.ext_btn = QPushButton("⧉")
+        self.ext_btn.setMaximumWidth(40)
+
         self.horizontal.addWidget(self.back_btn)
         self.horizontal.addWidget(self.forward_btn)
         self.horizontal.addWidget(self.reload_btn)
         self.horizontal.addWidget(self.home_btn)
         self.horizontal.addWidget(self.go_btn)
+        self.horizontal.addWidget(self.stop_btn)
         self.horizontal.addWidget(self.textbox)
+        self.horizontal.addWidget(self.list_btn)
+        self.horizontal.addWidget(self.devcon_btn)
+        self.horizontal.addWidget(self.ext_btn)
 
         self.browser = QWebEngineView()
 
         self.go_btn.clicked.connect(lambda: self.on_click())
+        self.reload_btn.clicked.connect(lambda: self.on_click())
+        self.stop_btn.clicked.connect(self.browser.stop)
 
         # todo: use for later
         """
@@ -98,13 +117,13 @@ class App(QMainWindow):
         self.layout.addWidget(self.browser)
 
         # todo: use for later
-        """
+
         self.tabs.tabBar().setContextMenuPolicy(Qt.PreventContextMenu)
         self.tabs.tabBar().setTabsClosable(True)
         self.tabs.tabBar().tabCloseRequested.connect(lambda index: self.tabs.removeTab(index))
         self.tabs.tabBar().addTab("+")
         self.tabs.tabBar().tabBarClicked.connect(self.tab_bar_clicked)
-
+        """
         self.browser.setUrl(QUrl("https://google.com"))
         """
 
@@ -135,6 +154,19 @@ class App(QMainWindow):
 
         self.check_reference()
 
+    def add_new_tab(self, qurl=None):
+        if qurl is None:
+            qurl = QUrl("https://google.com")
+
+        self.browser.setUrl(qurl)
+
+        i = self.tabs.addTab(self.browser, "New Tab")
+        self.tabs.setCurrentIndex(i)
+
+    def tab_bar_clicked(self, index):
+        if index == self.tabs.count() - 1:
+            self.add_new_tab()
+
     def check_reference(self):
         line = ''
         iXe = 0
@@ -148,13 +180,19 @@ class App(QMainWindow):
                 if 'script src="' in line:
                     sourcename = (line.split('src="')[1]).split('"')[0]
                     print(sourcename)
+                    if sourcename.startswith("https://"):
+                        sourcename = sourcename.removeprefix("https://")
+
                     conn.request("_dtp", self.textboxValue + "/" + sourcename)
+                    print(sourcename)
+                    print(self.textboxValue + "/" + sourcename)
                     try:
                         rsp = conn.getresponse()
                     except:
                         print("Server did not respond")
                     rsts_scr = int(rsp.status)
                     print(rsts_scr)
+                    print("decode")
                     self.data_received_script1 = (rsp.read()).decode("utf-8", errors="ignore")
                     if not os.path.exists(
                             os.getcwd() + "/" + (sourcename.removesuffix(sourcename.split("/")[len(sourcename.split("/")) - 1])).replace("https://",
@@ -167,16 +205,22 @@ class App(QMainWindow):
                                                                                                                                                      "https%3A///")):
                         with open(os.getcwd() + "/" + (sourcename.replace("https://", "https%3A///")).split("?")[0], "w") as _script:
                             _script.write(self.data_received_script1)
+                    print(f'makefile {os.getcwd() + "/" + (sourcename.replace("https://", "https%3A///")).split("?")[0]}\n')
                 elif "script src='" in line:
                     sourcename = (line.split("src='")[1]).split("'")[0]
                     print(sourcename)
+                    if sourcename.startswith("https://"):
+                        sourcename = sourcename.removeprefix("https://")
                     conn.request("_dtp", self.textboxValue + "/" + sourcename)
+                    print(sourcename)
+                    print(self.textboxValue + "/" + sourcename)
                     try:
                         rsp = conn.getresponse()
                     except:
                         print("Server did not respond")
                     rsts_scr = int(rsp.status)
                     print(rsts_scr)
+                    print("decode")
                     self.data_received_script2 = (rsp.read()).decode("utf-8", errors="ignore")
                     if not os.path.exists(
                             os.getcwd() + "/" + (sourcename.removesuffix(sourcename.split("/")[len(sourcename.split("/")) - 1])).replace("https://",
@@ -189,17 +233,23 @@ class App(QMainWindow):
                                                                                                                                                      "https%3A///")):
                         with open(os.getcwd() + "/" + (sourcename.replace("https://", "https%3A///")).split("?")[0], "w") as _script:
                             _script.write(self.data_received_script2)
+                    print(f'makefile {os.getcwd() + "/" + (sourcename.replace("https://", "https%3A///")).split("?")[0]}\n')
 
                 if 'script async src="' in line:
                     sourcename = (line.split('src="')[1]).split('"')[0]
                     print(sourcename)
+                    if sourcename.startswith("https://"):
+                        sourcename = sourcename.removeprefix("https://")
                     conn.request("_dtp", self.textboxValue + "/" + sourcename)
+                    print(sourcename)
+                    print(self.textboxValue + "/" + sourcename)
                     try:
                         rsp = conn.getresponse()
                     except:
                         print("Server did not respond")
                     rsts_scr = int(rsp.status)
                     print(rsts_scr)
+                    print("decode")
                     self.data_received_script3 = (rsp.read()).decode("utf-8", errors="ignore")
                     if not os.path.exists(
                             os.getcwd() + "/" + (sourcename.removesuffix(sourcename.split("/")[len(sourcename.split("/")) - 1])).replace("https://",
@@ -212,16 +262,22 @@ class App(QMainWindow):
                                                                                                                                                      "https%3A///")):
                         with open(os.getcwd() + "/" + (sourcename.replace("https://", "https%3A///")).split("?")[0], "w") as _script:
                             _script.write(self.data_received_script3)
+                    print(f'makefile {os.getcwd() + "/" + (sourcename.replace("https://", "https%3A///")).split("?")[0]}\n')
                 elif "script async src='" in line:
                     sourcename = (line.split("src='")[1]).split("'")[0]
                     print(sourcename)
+                    if sourcename.startswith("https://"):
+                        sourcename = sourcename.removeprefix("https://")
                     conn.request("_dtp", self.textboxValue + "/" + sourcename)
+                    print(sourcename)
+                    print(self.textboxValue + "/" + sourcename)
                     try:
                         rsp = conn.getresponse()
                     except:
                         print("Server did not respond")
                     rsts_scr = int(rsp.status)
                     print(rsts_scr)
+                    print("decode")
                     self.data_received_script4 = (rsp.read()).decode("utf-8", errors="ignore")
                     if not os.path.exists(
                             os.getcwd() + "/" + (sourcename.removesuffix(sourcename.split("/")[len(sourcename.split("/")) - 1])).replace("https://",
@@ -235,18 +291,27 @@ class App(QMainWindow):
                         with open(os.getcwd() + "/" + (sourcename.replace("https://", "https%3A///")).split("?")[0], "w") as _script:
                             _script.write(self.data_received_script4)
 
+                    print(f'makefile {os.getcwd() + "/" + (sourcename.replace("https://", "https%3A///")).split("?")[0]}\n')
+
                 if 'link rel="stylesheet" href="' in line:
 
                     sourcename = (line.split('href="')[1]).split('"')[0]
                     print(sourcename)
+                    if sourcename.startswith("https://"):
+                        sourcename = sourcename.removeprefix("https://")
                     conn.request("_dtp", self.textboxValue + "/" + sourcename)
+                    print(sourcename)
+                    print(self.textboxValue + "/" + sourcename)
+
                     try:
                         rsp = conn.getresponse()
+                        print("response")
                     except:
                         print("Server did not respond")
                     rsts_sty = int(rsp.status)
                     print(rsts_sty)
                     self.data_received_style1 = (rsp.read()).decode("utf-8", errors="ignore")
+                    print("decode")
                     if not os.path.exists(
                             os.getcwd() + "/" + (sourcename.removesuffix(sourcename.split("/")[len(sourcename.split("/")) - 1])).replace("https://",
                                                                                                                                          "https%3A///")):
@@ -260,17 +325,27 @@ class App(QMainWindow):
                         with open(os.getcwd() + "/" + (sourcename.replace("https://", "https%3A///")).split("?")[0], "w") as _style:
                             _style.write(self.data_received_style1)
                             _style.close()
+
+                    self.data_received_style1 = ''
+
+                    print(f'makefile {os.getcwd() + "/" + (sourcename.replace("https://", "https%3A///")).split("?")[0]}, [{self.data_received_style2}]\n')
                 elif "link rel='stylesheet' href='" in line:
 
                     sourcename = (line.split("href='")[1]).split("'")[0]
                     print(sourcename)
+                    if sourcename.startswith("https://"):
+                        sourcename = sourcename.removeprefix("https://")
                     conn.request("_dtp", self.textboxValue + "/" + sourcename)
+                    print(sourcename)
+                    print(self.textboxValue + "/" + sourcename)
+
                     try:
                         rsp = conn.getresponse()
                     except:
                         print("Server did not respond")
                     rsts_sty = int(rsp.status)
                     print(rsts_sty)
+                    print("decode")
                     self.data_received_style2 = (rsp.read()).decode("utf-8", errors="ignore")
                     if not os.path.exists(
                             os.getcwd() + "/" + (sourcename.removesuffix(sourcename.split("/")[len(sourcename.split("/")) - 1])).replace("https://",
@@ -283,6 +358,8 @@ class App(QMainWindow):
                                                                                                                                                      "https%3A///")):
                         with open(os.getcwd() + "/" + (sourcename.replace("https://", "https%3A///")).split("?")[0], "w") as _style:
                             _style.write(self.data_received_style2)
+
+                    print(f'makefile {os.getcwd() + "/" + (sourcename.replace("https://", "https%3A///")).split("?")[0]}, [{self.data_received_style2}]\n')
 
                 # sleep(0.1)
 

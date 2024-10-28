@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 
 !/webopener-1.2.0.py
+
+/browser/
