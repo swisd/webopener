@@ -1,0 +1,4 @@
+https://patorjk.com/software/taag/#p=display&f=Slant&t=Diamond
+http://www.stackoverflow.com
+https://www.google.com/
+http://192.168.50.201:8000/
